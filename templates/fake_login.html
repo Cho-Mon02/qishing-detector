@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>네이버 : 로그인</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f5f6f7; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-box { width: 100%; max-width: 400px; padding: 40px 20px; background: #fff; border: 1px solid #dadada; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .naver-logo { font-size: 40px; font-weight: 900; color: #03cf5d; letter-spacing: -2px; margin-bottom: 30px; }
+        .notice-banner { background-color: #fff3cd; color: #664d03; border: 1px solid #ffecb5; padding: 12px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-bottom: 25px; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <div class="naver-logo">NAVER</div>
+        
+        <div class="notice-banner">
+            ⚠️ [⚠️ 보안 경고 - 모의 훈련용 페이지]<br>
+            이 화면은 QShield 큐싱 탐지 프로젝트의 취약점 테스트를 위해 제작된 가짜 웹페이지입니다.
+        </div>
+
+        <form onsubmit="alert('아이디와 비밀번호가 가짜 해커 서버로 전송되었습니다! (훈련 종료)'); return false;">
+            <div class="form-floating mb-2">
+                <input type="text" class="form-control" id="floatingInput" placeholder="아이디" required>
+                <label for="floatingInput" class="text-secondary small">아이디(이메일)</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="floatingPassword" placeholder="비밀번호" required>
+                <label for="floatingPassword" class="text-secondary small">비밀번호</label>
+            </div>
+            <button class="btn w-100 fw-bold py-3 text-white" style="background-color: #03cf5d; border: none; font-size: 18px;">로그인</button>
+        </form>
+        
+        <div class="mt-4 small text-secondary">
+            <span class="mx-1">비밀번호 찾기</span> | <span class="mx-1">아이디 찾기</span> | <span class="mx-1">회원가입</span>
+        </div>
+    </div>
+
+</body>
+</html>
