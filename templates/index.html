@@ -89,7 +89,7 @@
             </div>
 
             <div class="mt-4 text-center">
-                <button class="btn btn-outline-secondary w-100 py-2 fw-bold rounded-pill shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#historyCollapse" aria-expanded="false">
+                <button class="btn btn-outline-secondary w-100 py-2 fw-bold rounded-pill shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#historyCollapse" aria-expanded="false" onclick="refreshHistory()">
                     <i class="bi bi-clock-history me-2"></i>최근 스캔 이력 확인하기
                 </button>
 
@@ -276,6 +276,30 @@
             resultBox.classList.add('d-none');
             startCamera();
         }
+
+        function refreshHistory() {
+    // 1. 현재 화면에 있는 이력 표의 부모 상자(id나 class가 없다면 선택자로 지정)
+    const historyCard = document.querySelector('#historyCollapse .card');
+    
+    if (!historyCard) return;
+
+    // 2. 현재 화면 전체를 새로고침하지 않고, 백엔드의 메인 주소('/')에 비동기 요청을 보냅니다.
+    fetch('/')
+        .then(response => response.text()) // 현재 DB 최신 정보가 반영된 새 HTML 페이지 전체를 글자로 받아옴
+        .then(htmlText => {
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            const newTable = doc.querySelector('#historyCollapse .table-responsive');
+            const oldTable = historyCard.querySelector('.table-responsive');
+            
+            
+            if (newTable && oldTable) {
+                oldTable.innerHTML = newTable.innerHTML;
+            }
+        })
+        .catch(err => console.error("실시간 이력 갱신 실패:", err));
+}
 
         window.onload = startCamera;
     </script>
