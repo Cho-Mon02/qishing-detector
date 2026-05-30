@@ -185,6 +185,8 @@ def scan_frame():
     except:
         return jsonify({'success': False})
 
+
+
 # [통로 2: 직접 고른 파일 이미지 검사 엔진 + OpenCV 고도화 필터]
 @app.route('/upload_file_api', methods=['POST'])
 def upload_file_api():
@@ -242,6 +244,62 @@ def upload_file_api():
         return jsonify({'success': False, 'message': 'QR 코드를 인식하지 못했습니다.'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
+
+# [통로 3: ARM64 가상머신 최적화 샌드박스 안전 미리보기 엔진]
+@app.route('/safe_preview_api', methods=['POST'])
+def safe_preview_api():
+    from selenium import webdriver
+    from selenium.webdriver.chrome.service import Service
+    from selenium.webdriver.chrome.options import Options
+
+    data = request.get_json()
+    if not data or 'url' not in data:
+        return jsonify({'success': False, 'message': '대상 URL이 없습니다.'})
+    
+    target_url = data['url']
+    
+    chrome_options = Options()
+    chrome_options.add_argument('--headless')           # 화면 없는 격리 메모리 모드
+    chrome_options.add_argument('--no-sandbox')          # 샌드박스 보안 격리 해제
+    chrome_options.add_argument('--disable-dev-shm-usage') # 공유 메모리 크래시 방지
+    chrome_options.add_argument('--disable-gpu')         # 그래픽 가속 에러 방지
+    chrome_options.add_argument('--window-size=1280,800') 
+    
+    # 🍏 1. 크로미움 브라우저 바이너리 실행 파일 경로 매핑
+    chrome_options.binary_location = '/usr/bin/chromium-browser'
+    
+    # 🌟 셀레니움 내부 매니저가 인터넷을 통해 드라이버를 자동으로 찾으려는 짓을 완전히 차단합니다.
+    chrome_options.set_capability('browserVersion', 'stable')
+    
+    driver = None
+    try:
+        # ─── [ 🌟 무적의 하드코딩 경로 지정 치트키 ] ───
+        # which 명령어로 확인된 실제 시스템 드라이버 경로를 완벽하게 고정합니다.
+        # 이렇게 하면 셀레니움이 엉뚱한 구글 서버(linux-arm64 지원 안 하는 곳)를 찌르지 않고 
+        # 우분투 내부에 있는 드라이버를 즉시 강제 구동합니다.
+        service = Service(executable_path='/usr/bin/chromedriver')
+        
+        # 주입된 서비스와 완화 옵션을 바탕으로 크로미움을 다이렉트 제어합니다.
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        # ───────────────────────────────────────────────
+        
+        driver.set_page_load_timeout(10) # 가상머신 연산 속도를 감안하여 타임아웃을 10초로 확장
+        driver.get(target_url)
+        
+        screenshot_base64 = driver.get_screenshot_as_base64()
+        
+        return jsonify({
+            'success': True, 
+            'image': f"data:image/png;base64,{screenshot_base64}"
+        })
+        
+    except Exception as e:
+        # 에러가 나더라도 어떤 에러인지 정확하게 디버깅하기 위해 상세 메시지 반환
+        return jsonify({'success': False, 'message': f"안전 미리보기 캡처 실패 (사유: {str(e)})"})
+        
+    finally:
+        if driver:
+            driver.quit()
 
 # [모의 해킹용 가짜 피싱 웹페이지]
 @app.route('/fake_naver_login')
