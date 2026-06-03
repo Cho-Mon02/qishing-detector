@@ -272,16 +272,15 @@
             }
             resultIcon.style.color = analysis.color;
 
-            // ─── [ 🌟 제어 파트: 위험 주소 판정 시 샌드박스 정찰 버튼 노출 처리 ] ───
+            
             const previewBtnArea = document.getElementById('preview-btn-area');
             if (analysis.score >= 20) {
                 previewBtnArea.classList.remove('d-none');
-                previewBtnArea.dataset.currentUrl = url; // 데이터셋 속성에 스캔된 위험 URL 바인딩
+                previewBtnArea.dataset.currentUrl = url;
             } else {
                 previewBtnArea.classList.add('d-none');
                 previewBtnArea.dataset.currentUrl = "";
             }
-            // ───────────────────────────────────────────────────────────────────────
 
             const reasonsContainer = document.getElementById('reasons-container');
             let reasonsHtml = "";
@@ -336,22 +335,22 @@
                 .catch(err => console.error("실시간 이력 갱신 실패:", err));
         }
 
-        // ─── [ 🌟 신규 추가: 백엔드 격리 샌드박스로 비동기 스크린샷을 요청하는 함수 ] ───
+
         function requestSafePreview() {
             const targetUrl = document.getElementById('preview-btn-area').dataset.currentUrl;
             if (!targetUrl) return;
 
-            // 부트스트랩 모달 인스턴스 가동 및 트리거
+            
             const previewModal = new bootstrap.Modal(document.getElementById('safePreviewModal'));
             previewModal.show();
 
-            // 모달 내부 컴포넌트 강제 리셋 (이전 캡처 잔상 제거 및 스피너 활성화)
+            
             document.getElementById('preview-loading').classList.remove('d-none');
             const screenshotImg = document.getElementById('preview-screenshot');
             screenshotImg.classList.add('d-none');
             screenshotImg.src = "";
 
-            // /safe_preview_api 백엔드로 정찰 요청
+            
             fetch('/safe_preview_api', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -360,7 +359,7 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    // 성공 시 대기 로딩을 숨기고 백엔드가 보낸 인코딩 픽셀 이미지를 투사
+                    
                     document.getElementById('preview-loading').classList.add('d-none');
                     screenshotImg.src = data.image;
                     screenshotImg.classList.remove('d-none');

@@ -8,7 +8,7 @@ import base64
 import re
 from datetime import datetime
 import requests
-import pandas as pd
+import pandas as pd 
 
 app = Flask(__name__)
 
@@ -38,7 +38,7 @@ def index():
     recent_logs = ScanLog.query.order_by(ScanLog.timestamp.desc()).limit(5).all()
     return render_template('index.html', logs=recent_logs)
 
-# ─── [ app.py 최종 업데이트 : 93% 정확도 버전 특성 추출기 ] ───
+#[ 93% 정확도 버전 특성 추출기 ]
 def extract_url_features(url):
     """
     [93% 고도화 버전] 실시간 스캔된 URL을 8대 핵심 보안 특성 수치로 변환합니다.
@@ -46,8 +46,7 @@ def extract_url_features(url):
     """
     if not isinstance(url, str):
         url = ""
-        
-    # 1~5번 특성 (기존)
+            
     url_len = len(url)
     dot_count = url.count('.')
     hyphen_count = url.count('-')
@@ -56,50 +55,42 @@ def extract_url_features(url):
     suspicious_keywords = ['login', 'verify', 'bank', 'update', 'phish', 'check', 'secure', 'naver', 'daum', 'kakao']
     keyword_count = sum(1 for word in suspicious_keywords if word in url.lower())
     
-    # 6~8번 특성 (신규 치트키)
     slash_count = url.count('/')
     has_subdomain = 1 if url.replace("www.", "").count('.') >= 2 else 0
     is_http = 1 if url.lower().startswith("http://") else 0
     
-    # 8개 데이터 배열 리턴
     return [url_len, dot_count, hyphen_count, digit_count, keyword_count, slash_count, has_subdomain, is_http]
 
 
-# ─── [ 🌟 고도화: 65만 개 대용량 ISCX-URL-2016 데이터셋 초고속 로드 및 AI 학습 ] ───
+# 65만 개 대용량 ISCX-URL-2016 데이터셋 초고속 로드 및 AI 학습
 try:
-    # 1. 다운로드받은 텍스트 주소 원본 CSV 파일 로드
+    
     df = pd.read_csv('malicious_phish.csv')
     print(f"📊 [QShield AI] 글로벌 ISCX 벤치마크 데이터셋 {len(df):,}개를 발견했습니다.")
     print("🧹 [QShield AI] 시스템 메모리 최적화 및 텍스트 데이터 특성 추출(수치 변환) 작업을 시작합니다...")
     
-    # 2. Pandas apply 함수를 이용하여 65만 개 텍스트 주소를 초고속으로 수치 행렬 변환
-    X_train = np.array(df['url'].apply(extract_url_features).tolist())
     
-    # 3. 정답지 컬럼(type) 리매핑: benign(정상)이면 0, 나머지는 전원 악성(1)으로 처리
+    X_train = np.array(df['url'].apply(extract_url_features).tolist())
     y_train = np.where(df['type'] == 'benign', 0, 1)
     
     print(f"🎯 [QShield AI] 65만 개 대용량 행렬 변환 완벽 완료 (데이터 구조: {X_train.shape})")
     print("🌲 [QShield AI] 100개의 의사결정 나무 배정 및 모든 CPU 멀티코어 동원 정밀 학습 시작...")
 
 except FileNotFoundError:
-    # 파일이 아직 준비되지 않았을 때 프로젝트가 정상 구동되도록 막아주는 방어 코드
     print("⚠️ [QShield AI] 'malicious_phish.csv' 파일이 없어 임시 테스트 데이터로 구동합니다.")
     X_train = np.array([[15, 1, 0, 0, 0], [22, 2, 0, 0, 0], [65, 5, 4, 12, 2], [55, 4, 3, 8, 1]])
     y_train = np.array([0, 0, 1, 1])
 
-# 4. 랜덤 포레스트 모델 생성 및 전체 CPU 코어(-1) 할당 후 정밀 피팅(fit)
+
 ml_classifier = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
 ml_classifier.fit(X_train, y_train)
 print("🌲 [QShield AI] 65만 개 글로벌 패턴 마스터! 인공지능 탐지 엔진 최종 훈련 전격 완료!")
-# ─────────────────────────────────────────────────────────────────────────
 
-
-# [5주차 핵심 URL 위험도 분석 알고리즘]
 def analyze_url(url):
     risk_score = 0
     reasons = []
 
-    # ─── [ 단축 URL 우회 및 원본 추적 ] ───
+    # 단축 URL 우회 및 원본 추적
     short_domains = ['bit.ly', 'tinyurl.com', 'goo.gl', 't.co', 'me2.do']
     is_shortened = any(domain in url.lower() for domain in short_domains)
 
@@ -130,15 +121,13 @@ def analyze_url(url):
         risk_score += 20
         reasons.append("데이터 암호화가 지원되지 않는 안전하지 않은 연결(HTTP)을 사용 중입니다.")
         
-    # ─── [ 🌟 크로스 체크: 훈련된 AI 모델 기반 실시간 위험도 추론 ] ───
+    # 훈련된 AI 모델 기반 실시간 위험도 추론
     current_features = extract_url_features(url)
     ai_prediction = ml_classifier.predict(np.array([current_features]))[0]
     
     if ai_prediction == 1:
-        # 글로벌 대용량 패턴 데이터셋과 일치할 경우 가중치 추가 및 디스플레이 리포팅
         risk_score += 15
         reasons.append("🤖 [AI 분석] URL의 구조적 패턴이 글로벌 피싱 사이트 데이터셋의 악성 양식과 일치합니다.")
-    # ──────────────────────────────────────────────────────────────────
         
     if risk_score >= 60:
         status = "🚨 위험 (피싱 의심 사이트)"
@@ -152,7 +141,7 @@ def analyze_url(url):
         
     return {'score': risk_score, 'status': status, 'color': color, 'reasons': reasons}
 
-# [통로 1: 실시간 비디오 프레임 스캔 엔진]
+# 통로 1: 실시간 비디오 프레임 스캔 엔진
 @app.route('/scan_frame', methods=['POST'])
 def scan_frame():
     data = request.get_json()
@@ -187,7 +176,7 @@ def scan_frame():
 
 
 
-# [통로 2: 직접 고른 파일 이미지 검사 엔진 + OpenCV 고도화 필터]
+# 통로 2: 직접 고른 파일 이미지 검사 엔진 + OpenCV 고도화 필터
 @app.route('/upload_file_api', methods=['POST'])
 def upload_file_api():
     if 'file' not in request.files:
@@ -245,7 +234,7 @@ def upload_file_api():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
-# [통로 3: ARM64 가상머신 최적화 샌드박스 안전 미리보기 엔진]
+# 통로 3: ARM64 가상머신 최적화 샌드박스 안전 미리보기 엔진
 @app.route('/safe_preview_api', methods=['POST'])
 def safe_preview_api():
     from selenium import webdriver
@@ -265,23 +254,20 @@ def safe_preview_api():
     chrome_options.add_argument('--disable-gpu')         # 그래픽 가속 에러 방지
     chrome_options.add_argument('--window-size=1280,800') 
     
-    # 🍏 1. 크로미움 브라우저 바이너리 실행 파일 경로 매핑
+    
     chrome_options.binary_location = '/usr/bin/chromium-browser'
     
-    # 🌟 셀레니움 내부 매니저가 인터넷을 통해 드라이버를 자동으로 찾으려는 짓을 완전히 차단합니다.
+    
     chrome_options.set_capability('browserVersion', 'stable')
     
     driver = None
     try:
-        # ─── [ 🌟 무적의 하드코딩 경로 지정 치트키 ] ───
-        # which 명령어로 확인된 실제 시스템 드라이버 경로를 완벽하게 고정합니다.
-        # 이렇게 하면 셀레니움이 엉뚱한 구글 서버(linux-arm64 지원 안 하는 곳)를 찌르지 않고 
-        # 우분투 내부에 있는 드라이버를 즉시 강제 구동합니다.
+     
         service = Service(executable_path='/usr/bin/chromedriver')
         
-        # 주입된 서비스와 완화 옵션을 바탕으로 크로미움을 다이렉트 제어합니다.
+        
         driver = webdriver.Chrome(service=service, options=chrome_options)
-        # ───────────────────────────────────────────────
+        
         
         driver.set_page_load_timeout(10) # 가상머신 연산 속도를 감안하여 타임아웃을 10초로 확장
         driver.get(target_url)
@@ -294,14 +280,14 @@ def safe_preview_api():
         })
         
     except Exception as e:
-        # 에러가 나더라도 어떤 에러인지 정확하게 디버깅하기 위해 상세 메시지 반환
+        
         return jsonify({'success': False, 'message': f"안전 미리보기 캡처 실패 (사유: {str(e)})"})
         
     finally:
         if driver:
             driver.quit()
 
-# [모의 해킹용 가짜 피싱 웹페이지]
+# 모의 해킹용 가짜 피싱 웹페이지
 @app.route('/fake_naver_login')
 def fake_naver_login():
     return render_template('fake_login.html')
